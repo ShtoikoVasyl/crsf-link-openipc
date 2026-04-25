@@ -327,3 +327,7 @@ Camera:
 - `udp + raw` is the lightest mode, but UDP can drop datagrams
 - `udp + crsf` is the most sensible UDP mode if you want packet boundaries
 - `420000` baud is configured on Linux/OpenIPC using `termios2/BOTHER` when needed
+
+## License
+
+- [MIT](LICENSE)
