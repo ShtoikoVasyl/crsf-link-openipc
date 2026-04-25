@@ -1,0 +1,92 @@
+#!/bin/sh
+
+DAEMON="${BRIDGE_BIN:-/usr/bin/openipc_ip_bridge}"
+PIDFILE="/var/run/openipc_ip_bridge.pid"
+ENV_FILE="${ENV_FILE:-/etc/openipc_ip_bridge.env}"
+WRAPPER_SCRIPT="${WRAPPER_SCRIPT:-/usr/bin/openipc_direct_eth_bridge.sh}"
+
+load_env() {
+    if [ -f "${ENV_FILE}" ]; then
+        set -a
+        # shellcheck disable=SC1090
+        . "${ENV_FILE}"
+        set +a
+    fi
+}
+
+is_running() {
+    if [ ! -f "${PIDFILE}" ]; then
+        return 1
+    fi
+    pid="$(cat "${PIDFILE}")"
+    [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null
+}
+
+start_service() {
+    if is_running; then
+        echo "openipc_ip_bridge is already running"
+        return 0
+    fi
+
+    load_env
+
+    if [ -x "${WRAPPER_SCRIPT}" ]; then
+        "${WRAPPER_SCRIPT}" >/tmp/openipc_ip_bridge.out 2>/tmp/openipc_ip_bridge.err &
+    else
+        "${DAEMON}" \
+            --host "${GROUND_HOST}" \
+            --port "${GROUND_PORT:-9000}" \
+            --transport "${BRIDGE_TRANSPORT:-tcp}" \
+            --mode "${BRIDGE_MODE:-raw}" \
+            --serial "${SERIAL_PORT:-/dev/ttyS2}" \
+            --baud "${SERIAL_BAUD:-420000}" \
+            --connect-timeout-ms "${CONNECT_TIMEOUT_MS:-2000}" \
+            --reconnect-delay-ms "${RECONNECT_DELAY_MS:-1000}" \
+            --poll-timeout-ms "${POLL_TIMEOUT_MS:-250}" \
+            ${VERBOSE:+--verbose} >/tmp/openipc_ip_bridge.out 2>/tmp/openipc_ip_bridge.err &
+    fi
+
+    echo $! > "${PIDFILE}"
+    echo "openipc_ip_bridge started"
+}
+
+stop_service() {
+    if ! is_running; then
+        echo "openipc_ip_bridge is not running"
+        rm -f "${PIDFILE}"
+        return 0
+    fi
+
+    pid="$(cat "${PIDFILE}")"
+    kill "${pid}" 2>/dev/null || true
+    sleep 1
+    kill "${pid}" 2>/dev/null || true
+    rm -f "${PIDFILE}"
+    echo "openipc_ip_bridge stopped"
+}
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    restart)
+        stop_service
+        sleep 1
+        start_service
+        ;;
+    status)
+        if is_running; then
+            echo "openipc_ip_bridge is running"
+        else
+            echo "openipc_ip_bridge is stopped"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

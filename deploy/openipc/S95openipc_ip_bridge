@@ -1,0 +1,19 @@
+#!/bin/sh
+
+case "$1" in
+    start)
+        if [ -x /etc/init.d/openipc_ip_bridge ]; then
+            /etc/init.d/openipc_ip_bridge start
+        fi
+        ;;
+    stop)
+        if [ -x /etc/init.d/openipc_ip_bridge ]; then
+            /etc/init.d/openipc_ip_bridge stop
+        fi
+        ;;
+    restart)
+        if [ -x /etc/init.d/openipc_ip_bridge ]; then
+            /etc/init.d/openipc_ip_bridge restart
+        fi
+        ;;
+esac
