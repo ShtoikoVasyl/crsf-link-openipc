@@ -41,13 +41,13 @@ That is why the default mode is now:
 
 For direct camera-to-ground Ethernet, the simplest setup is:
 
-- `crsf-link-ground` runs on the control/configuration computer
-- camera runs `openipc_ip_bridge` and connects to the control/configuration computer IP
+- the `crsf-link-ground` repository runs on the control/configuration computer with the current binary name `tdi_crsf_reader`
+- the `crsf-link-openipc` repository runs on the camera with the current binary name `openipc_ip_bridge`
 
 Recommended default:
 
-- `tdi_console_reader`: `transport: tcp`
-- `tdi_console_reader`: `tcp_length_prefix: false`
+- `crsf-link-ground` / `tdi_crsf_reader`: `transport: tcp`
+- `crsf-link-ground` / `tdi_crsf_reader`: `tcp_length_prefix: false`
 - `openipc_ip_bridge`: `--transport tcp --mode raw`
 
 ## Build on your workstation
@@ -111,7 +111,7 @@ Environment variables:
 
 ## Control computer setup
 
-For TCP raw mode with `tdi_console_reader`, use:
+For TCP raw mode with `crsf-link-ground` (`tdi_crsf_reader`), use:
 
 ```yaml
 transport: tcp
@@ -122,7 +122,7 @@ serial_baud: 420000
 raw_mode: true
 ```
 
-For UDP mode with `tdi_console_reader`, use:
+For UDP raw mode with `crsf-link-ground` (`tdi_crsf_reader`), use:
 
 ```yaml
 transport: udp
@@ -132,7 +132,7 @@ serial_baud: 420000
 raw_mode: true
 ```
 
-If you intentionally use `--mode crsf` on the camera, then `raw_mode: false` on the control/configuration computer side is the cleaner pairing.
+If you intentionally use `--mode crsf` on the camera, then `raw_mode: false` on the control/configuration computer side is the cleaner pairing. In this repository pair that corresponds to `crsf-link-ground` running `config/config-udp-crsf.yaml`.
 
 ## Installation on OpenIPC through SSH
 
@@ -314,7 +314,7 @@ Detailed walkthrough:
 Control/configuration computer:
 
 - IP: `192.168.1.11/24`
-- `tdi_console_reader` listening on port `9000`
+- `crsf-link-ground` / `tdi_crsf_reader` listening on port `9000`
 
 Camera:
 
